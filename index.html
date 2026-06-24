@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>恋愛シミュレーション - アニメーション版</title>
+    <title>恋愛シミュレーション - 口パクアニメーション版</title>
     <style>
         body {
             background-color: #f0f0f0;
@@ -33,9 +33,48 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            object-fit: contain;
             z-index: 1;
+            /* 新規追加：画像を中央揃えにするため */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* コンテナ下部に配置 */
         }
+
+        /* --- ここから下に、新しいスタイルとアニメーションを追加 --- */
+
+        /* 新規：アニメーションの定義（1.2秒周期でパクパクする） */
+        @keyframes talkMouth {
+            0%, 30%, 100% { opacity: 0; } /* 閉じる（開口画像の透明度0） */
+            40%, 90% { opacity: 1; }    /* 開く（開口画像の透明度1） */
+        }
+
+        /* 新規：画像共通スタイル */
+        #character img {
+            max-height: 100%; /* コンテナいっぱいに */
+            object-fit: contain;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 新規：閉じた口の画像 */
+        #character img.heroine-mouth-closed {
+            z-index: 1; /* 基礎 */
+        }
+
+        /* 新規：開いた口の画像 */
+        #character img.heroine-mouth-open {
+            z-index: 2; /* 上に配置 */
+            opacity: 0; /* 初期は非表示 */
+        }
+
+        /* 新規：話している時（.speakingクラス適用時）にアニメーションを適用 */
+        #character.speaking .heroine-mouth-open {
+            animation: talkMouth 1.2s infinite; /* アニメーション適用 */
+        }
+
+        /* --- 元のUIスタイル --- */
 
         /* 左側：メッセージウィンドウ */
         #message-window {
@@ -123,11 +162,190 @@
     </style>
 </head>
 <body>
-
     <div id="game-container">
         <div id="affection-meter">❤ 好感度: <span id="affection-value">0</span></div>
-        
-        <img src="heroine.jpg" id="character" alt="ヒロイン">
+
+        <div id="character">
+            <img src="heroine.jpg" class="heroine-mouth-closed" alt="ヒロイン（閉口）">
+            <img src="heroine2.jpg" class="heroine-mouth-open" alt="ヒロイン（開口）">
+        </div>
+
+        <div id="message-window">
+            <div id="character-name">名前</div>
+            <div id="dialogue-text">テキストがここに入ります。はい、承知いたしました。口パクアニメーションを実装した完全なHTMLコードを作成しました。このコードをテキストエディタに貼り付け、`index.html` という名前で保存してください。同じフォルダに `heroine.jpg`（閉口画像）と `heroine2.jpg`（開口画像）が配置されていることを確認してください。
+
+```html
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恋愛シミュレーション - 口パクアニメーション版</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+        }
+
+        /* ゲーム画面全体のコンテナ */
+        #game-container {
+            width: 960px;
+            height: 600px;
+            background: linear-gradient(to bottom, #87CEEB, #e0f7fa);
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        /* ヒロイン画像：プログラムの動きを消してスッキリさせました */
+        #character {
+            height: 90%;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+            /* 新規追加：画像を中央揃えにするため */
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* コンテナ下部に配置 */
+        }
+
+        /* --- ここから下に、新しいスタイルとアニメーションを追加 --- */
+
+        /* 新規：アニメーションの定義（1.2秒周期でパクパクする） */
+        @keyframes talkMouth {
+            0%, 30%, 100% { opacity: 0; } /* 閉じる（開口画像の透明度0） */
+            40%, 90% { opacity: 1; }    /* 開く（開口画像の透明度1） */
+        }
+
+        /* 新規：画像共通スタイル */
+        #character img {
+            max-height: 100%; /* コンテナいっぱいに */
+            object-fit: contain;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* 新規：閉じた口の画像 */
+        #character img.heroine-mouth-closed {
+            z-index: 1; /* 基礎 */
+        }
+
+        /* 新規：開いた口の画像 */
+        #character img.heroine-mouth-open {
+            z-index: 2; /* 上に配置 */
+            opacity: 0; /* 初期は非表示 */
+        }
+
+        /* 新規：話している時（.speakingクラス適用時）にアニメーションを適用 */
+        #character.speaking .heroine-mouth-open {
+            animation: talkMouth 1.2s infinite; /* アニメーション適用 */
+        }
+
+        /* --- 元のUIスタイル --- */
+
+        /* 左側：メッセージウィンドウ */
+        #message-window {
+            position: absolute;
+            bottom: 40px;
+            left: 30px;
+            width: 380px;
+            height: 160px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border: 3px solid #ffb6c1;
+            border-radius: 15px;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 右側：選択肢コンテナ */
+        #choices-container {
+            position: absolute;
+            bottom: 40px;
+            right: 30px;
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        /* 名前ラベル */
+        #character-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #ff69b4;
+            border-bottom: 2px solid #ffb6c1;
+            display: inline-block;
+        }
+
+        #dialogue-text {
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
+
+        /* 選択肢ボタン */
+        .choice-btn {
+            background-color: rgba(255, 182, 193, 0.9);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            box-shadow: 0 4px 0 #ff8da1;
+        }
+
+        .choice-btn:hover {
+            background-color: #ff69b4;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #e05596;
+        }
+
+        .choice-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0;
+        }
+
+        /* 好感度表示 */
+        #affection-meter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #ff69b4;
+            z-index: 10;
+            border: 2px solid #ffb6c1;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="affection-meter">❤ 好感度: <span id="affection-value">0</span></div>
+
+        <div id="character">
+            <img src="heroine.jpg" class="heroine-mouth-closed" alt="ヒロイン（閉口）">
+            <img src="heroine2.jpg" class="heroine-mouth-open" alt="ヒロイン（開口）">
+        </div>
 
         <div id="message-window">
             <div id="character-name">名前</div>
@@ -138,6 +356,7 @@
     </div>
 
     <script>
+        // ストーリーデータ
         const story = {
             start: {
                 name: "幼馴染",
@@ -166,7 +385,7 @@
             end_good: {
                 name: "幼馴染",
                 text: "「さすが！ じゃあ今日の放課後、一緒に遊ぼうね！」<br><br><b>〜 Happy End 〜</b>",
-                choices: [] 
+                choices: []
             },
             end_normal: {
                 name: "幼馴染",
@@ -181,24 +400,40 @@
         };
 
         let affection = 0;
-
         const nameElement = document.getElementById("character-name");
         const textElement = document.getElementById("dialogue-text");
         const choicesContainer = document.getElementById("choices-container");
         const affectionValueElement = document.getElementById("affection-value");
 
+        // シーンを描画する関数
         function renderScene(sceneId) {
             const sceneData = story[sceneId];
             nameElement.innerHTML = sceneData.name;
             textElement.innerHTML = sceneData.text;
             choicesContainer.innerHTML = "";
 
+            // --- 新規：口パクアニメーションの制御 ---
+            const characterElement = document.getElementById("character");
+            // アニメーションを一旦リセット
+            characterElement.classList.remove("speaking");
+
+            if (sceneData.name) {
+                // 名前がある（ヒロインが話している）場合、アニメーションを開始
+                characterElement.classList.add("speaking");
+            }
+
             if (sceneData.choices.length > 0) {
+                // 選択肢がある場合、選択肢表示中もアニメーションを継続（お好みで）
+                // characterElement.classList.add("speaking"); 
+
                 sceneData.choices.forEach(choice => {
                     const button = document.createElement("button");
                     button.className = "choice-btn";
                     button.innerText = choice.text;
                     button.onclick = () => {
+                        // アニメーションを一旦停止してからシーンを遷移
+                        characterElement.classList.remove("speaking");
+                        
                         if (choice.affectionChange) {
                             affection += choice.affectionChange;
                             affectionValueElement.innerText = affection;
@@ -208,6 +443,10 @@
                     choicesContainer.appendChild(button);
                 });
             } else {
+                // 終了シーン
+                // 終了シーンではアニメーションを停止
+                characterElement.classList.remove("speaking");
+
                 const resetButton = document.createElement("button");
                 resetButton.className = "choice-btn";
                 resetButton.innerText = "🔄 最初から遊ぶ";
@@ -220,6 +459,7 @@
             }
         }
 
+        // 初期シーンの描画
         renderScene("start");
     </script>
 </body>
