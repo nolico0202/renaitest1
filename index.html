@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>恋愛シミュレーション - サイドレイアウト</title>
+    <title>恋愛シミュレーション - アニメーション版</title>
     <style>
         body {
             background-color: #f0f0f0;
@@ -17,24 +17,54 @@
 
         /* ゲーム画面全体のコンテナ */
         #game-container {
-            width: 960px; /* 少し幅を広げました */
+            width: 960px;
             height: 600px;
-            background: linear-gradient(to bottom, #87CEEB, #e0f7fa); /* 綺麗な背景グラデーション */
+            background: linear-gradient(to bottom, #87CEEB, #e0f7fa);
             position: relative;
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        /* ヒロイン画像：中央に配置し、お顔が見えるように調整 */
+        /* ヒロイン画像：常時ふわふわ動くアニメーション（float）を設定 */
         #character {
-            height: 90%; /* 画面内に収まるサイズ */
+            height: 90%;
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
             object-fit: contain;
             z-index: 1;
+            /* 4秒かけて上下にふわふわループするアニメーション */
+            animation: float-animation 4s ease-in-out infinite;
+            transition: filter 0.3s;
+        }
+
+        /* 【アニメーション1】常に呼吸しているようにふわふわ動く */
+        @keyframes float-animation {
+            0% {
+                bottom: 0px;
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                bottom: 12px; /* 少し上に浮く */
+                transform: translateX(-50%) scale(1.01); /* 微妙に拡大して立体感を出す */
+            }
+            100% {
+                bottom: 0px;
+                transform: translateX(-50%) scale(1);
+            }
+        }
+
+        /* 【アニメーション2】選択肢をクリックしたときに「ぴょこん」と跳ねる動き */
+        .jump-effect {
+            animation: jump-animation 0.4s ease-out !important;
+        }
+
+        @keyframes jump-animation {
+            0% { bottom: 0px; }
+            50% { bottom: 35px; } /* 上に跳ねる */
+            100% { bottom: 0px; }
         }
 
         /* 左側：メッセージウィンドウ */
@@ -44,7 +74,7 @@
             left: 30px;
             width: 380px;
             height: 160px;
-            background-color: rgba(255, 255, 255, 0.85); /* 透明感のある白 */
+            background-color: rgba(255, 255, 255, 0.85);
             border: 3px solid #ffb6c1;
             border-radius: 15px;
             padding: 20px;
@@ -83,7 +113,7 @@
 
         /* 選択肢ボタン */
         .choice-btn {
-            background-color: rgba(255, 182, 193, 0.9); /* ピンク色のボタン */
+            background-color: rgba(255, 182, 193, 0.9);
             color: white;
             border: none;
             padding: 15px 20px;
@@ -107,7 +137,7 @@
             box-shadow: 0 0 0;
         }
 
-        /* 好感度表示：左上に配置 */
+        /* 好感度表示 */
         #affection-meter {
             position: absolute;
             top: 20px;
@@ -186,6 +216,16 @@
         const textElement = document.getElementById("dialogue-text");
         const choicesContainer = document.getElementById("choices-container");
         const affectionValueElement = document.getElementById("affection-value");
+        const characterElement = document.getElementById("character");
+
+        // ヒロインにリアクション（ジャンプ）をさせる関数
+        function triggerCharacterReaction() {
+            // 一度クラスを削除して、再度追加することでアニメーションをリセット・実行する
+            characterElement.classList.remove("jump-effect");
+            // ズレを防止するため一瞬だけ待ってからクラスを付与
+            void characterElement.offsetWidth; 
+            characterElement.classList.add("jump-effect");
+        }
 
         function renderScene(sceneId) {
             const sceneData = story[sceneId];
@@ -199,11 +239,17 @@
                     button.className = "choice-btn";
                     button.innerText = choice.text;
                     button.onclick = () => {
+                        // 選択肢がクリックされたらヒロインをジャンプさせる
+                        triggerCharacterReaction();
+
                         if (choice.affectionChange) {
                             affection += choice.affectionChange;
                             affectionValueElement.innerText = affection;
                         }
-                        renderScene(choice.next);
+                        // アニメーションの余韻を感じさせるため、少しだけ遅らせて次の会話へ
+                        setTimeout(() => {
+                            renderScene(choice.next);
+                        }, 200);
                     };
                     choicesContainer.appendChild(button);
                 });
