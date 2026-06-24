@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>恋愛シミュレーション - 口パクアニメーション版</title>
+    <title>恋愛シミュレーション - 笑顔切り替え・口パクアニメーション版</title>
     <style>
         body {
             background-color: #f0f0f0;
@@ -26,7 +26,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        /* ヒロイン画像：プログラムの動きを消してスッキリさせました */
+        /* ヒロイン画像 */
         #character {
             height: 90%;
             position: absolute;
@@ -36,46 +36,43 @@
             z-index: 1;
             display: flex;
             justify-content: center;
-            align-items: flex-end; /* コンテナ下部に配置 */
+            align-items: flex-end; 
         }
 
-        /* --- ここから下に、新しいスタイルとアニメーションを追加 --- */
-
-        /* 新規：アニメーションの定義（1.2秒周期でパクパクする） */
+        /* アニメーションの定義（1.2秒周期でパクパクする） */
         @keyframes talkMouth {
-            0%, 30%, 100% { opacity: 0; } /* 閉じる（開口画像の透明度0） */
-            40%, 90% { opacity: 1; }    /* 開く（開口画像の透明度1） */
+            0%, 30%, 100% { opacity: 0; }
+            40%, 90% { opacity: 1; }
         }
 
-        /* 新規：画像共通スタイル */
+        /* 画像共通スタイル */
         #character img {
-            max-height: 100%; /* コンテナいっぱいに */
+            max-height: 100%;
             object-fit: contain;
             position: absolute;
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
+            transition: opacity 0.3s; /* 画像が切り替わる時に少しフワッとさせる */
         }
 
-        /* 新規：閉じた口の画像 */
+        /* 閉じた口の画像（ベース） */
         #character img.heroine-mouth-closed {
-            z-index: 1; /* 基礎 */
+            z-index: 1; 
         }
 
-        /* 新規：開いた口の画像 */
+        /* 開いた口の画像（アニメーション用） */
         #character img.heroine-mouth-open {
-            z-index: 2; /* 上に配置 */
-            opacity: 0; /* 初期は非表示 */
+            z-index: 2; 
+            opacity: 0; 
         }
 
-        /* 新規：話している時（.speakingクラス適用時）にアニメーションを適用 */
+        /* 話している時（.speakingクラス適用時）にアニメーションを適用 */
         #character.speaking .heroine-mouth-open {
-            animation: talkMouth 1.2s infinite; /* アニメーション適用 */
+            animation: talkMouth 1.2s infinite; 
         }
 
-        /* --- 元のUIスタイル --- */
-
-        /* 左側：メッセージウィンドウ */
+        /* --- UIスタイル --- */
         #message-window {
             position: absolute;
             bottom: 40px;
@@ -92,7 +89,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
-        /* 右側：選択肢コンテナ */
         #choices-container {
             position: absolute;
             bottom: 40px;
@@ -104,7 +100,6 @@
             z-index: 10;
         }
 
-        /* 名前ラベル */
         #character-name {
             font-weight: bold;
             font-size: 1.1em;
@@ -119,7 +114,6 @@
             line-height: 1.6;
         }
 
-        /* 選択肢ボタン */
         .choice-btn {
             background-color: rgba(255, 182, 193, 0.9);
             color: white;
@@ -145,7 +139,6 @@
             box-shadow: 0 0 0;
         }
 
-        /* 好感度表示 */
         #affection-meter {
             position: absolute;
             top: 20px;
@@ -171,18 +164,20 @@
 
         <div id="message-window">
             <div id="character-name">名前</div>
-            <div id="dialogue-text">テキストがここに入ります。</div>
+            <div id="dialogue-text"></div>
         </div>
 
         <div id="choices-container"></div>
     </div>
 
     <script>
-        // ストーリーデータ
+        // ストーリーデータ（各シーンで表示する画像「face」と「faceOpen」を指定できるようにしました）
         const story = {
             start: {
                 name: "幼馴染",
                 text: "「おはよう！ 今日もいい天気だね。一緒に学校行こ！」",
+                face: "heroine.jpg",        // 通常のベース画像
+                faceOpen: "heroine2.jpg",   // 通常の口開け画像
                 choices: [
                     { text: "❤ おはよう！ 行こうか", next: "scene_happy", affectionChange: 10 },
                     { text: "💧 えー、めんどくさいなあ", next: "scene_sad", affectionChange: -5 }
@@ -191,6 +186,8 @@
             scene_happy: {
                 name: "幼馴染",
                 text: "「えへへ、嬉しいな。あ、そういえば今日のテスト勉強した？」",
+                face: "heroine_happy.jpg",      // 【追加】好感度アップ時の笑顔画像
+                faceOpen: "heroine_happy.jpg",  // ※笑顔のままにするため、両方同じ画像を指定します
                 choices: [
                     { text: "✨ ばっちりだよ", next: "end_good", affectionChange: 10 },
                     { text: "🌀 全然してない…", next: "end_normal", affectionChange: 0 }
@@ -199,6 +196,8 @@
             scene_sad: {
                 name: "幼馴染",
                 text: "「むっ…相変わらず冷たいなあ。置いていくよ！」",
+                face: "heroine.jpg",
+                faceOpen: "heroine2.jpg",
                 choices: [
                     { text: "🙏 ごめんごめん、一緒に行くよ", next: "scene_happy", affectionChange: 5 },
                     { text: "🏃 勝手に行けば？", next: "end_bad", affectionChange: -10 }
@@ -207,16 +206,22 @@
             end_good: {
                 name: "幼馴染",
                 text: "「さすが！ じゃあ今日の放課後、一緒に遊ぼうね！」<br><br><b>〜 Happy End 〜</b>",
+                face: "heroine_happy.jpg",      // 【追加】ハッピーエンドも笑顔に
+                faceOpen: "heroine_happy.jpg",
                 choices: []
             },
             end_normal: {
                 name: "幼馴染",
                 text: "「もう、しょうがないなあ。放課後教えてあげるよ。」<br><br><b>〜 Normal End 〜</b>",
+                face: "heroine.jpg",
+                faceOpen: "heroine2.jpg",
                 choices: []
             },
             end_bad: {
                 name: "幼馴染",
                 text: "「…バカ！ もう知らない！」<br><br><b>〜 Bad End 〜</b>",
+                face: "heroine.jpg",
+                faceOpen: "heroine2.jpg",
                 choices: []
             }
         };
@@ -226,6 +231,9 @@
         const textElement = document.getElementById("dialogue-text");
         const choicesContainer = document.getElementById("choices-container");
         const affectionValueElement = document.getElementById("affection-value");
+        const characterElement = document.getElementById("character");
+        const baseImg = document.querySelector(".heroine-mouth-closed");
+        const openImg = document.querySelector(".heroine-mouth-open");
 
         // シーンを描画する関数
         function renderScene(sceneId) {
@@ -234,18 +242,20 @@
             textElement.innerHTML = sceneData.text;
             choicesContainer.innerHTML = "";
 
-            // --- 新規：口パクアニメーションの制御 ---
-            const characterElement = document.getElementById("character");
+            // --- 画像の切り替え処理 ---
+            // sceneDataに画像が設定されていればそれを、なければデフォルト画像を表示
+            baseImg.src = sceneData.face || "heroine.jpg";
+            openImg.src = sceneData.faceOpen || "heroine2.jpg";
+
             // アニメーションを一旦リセット
             characterElement.classList.remove("speaking");
 
-            if (sceneData.name) {
-                // 名前がある（ヒロインが話している）場合、アニメーションを開始
+            // 名前がある（ヒロインが話している）かつ、口開け用の画像が違う場合のみパクパクさせる
+            if (sceneData.name && baseImg.src !== openImg.src) {
                 characterElement.classList.add("speaking");
             }
 
             if (sceneData.choices.length > 0) {
-                // 選択肢がある場合、選択肢表示中もアニメーションを継続
                 sceneData.choices.forEach(choice => {
                     const button = document.createElement("button");
                     button.className = "choice-btn";
@@ -264,7 +274,6 @@
                 });
             } else {
                 // 終了シーン
-                // 終了シーンではアニメーションを停止
                 characterElement.classList.remove("speaking");
 
                 const resetButton = document.createElement("button");
