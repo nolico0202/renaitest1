@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恋愛シミュレーション プロトタイプ</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+        }
+
+        /* ゲーム画面全体のコンテナ */
+        #game-container {
+            width: 800px;
+            height: 600px;
+            background-color: #87CEEB; /* 背景色（青空のイメージ） */
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* キャラクター表示エリア（今回は仮で四角形） */
+        #character {
+            width: 300px;
+            height: 400px;
+            background-color: #ffb6c1; /* キャラクターの代わりのピンク色 */
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        /* メッセージウィンドウ */
+        #message-window {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            height: 120px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            padding: 15px;
+            box-sizing: border-box;
+            color: #fff;
+        }
+
+        #character-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+            color: #ffd700;
+        }
+
+        #dialogue-text {
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+
+        /* 選択肢のコンテナ */
+        #choices-container {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 80%;
+        }
+
+        /* 選択肢ボタン */
+        .choice-btn {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 2px solid #ccc;
+            padding: 15px;
+            font-size: 1.1em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .choice-btn:hover {
+            background-color: #ffe4e1;
+            border-color: #ffb6c1;
+        }
+
+        /* 好感度表示 */
+        #affection-meter {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="affection-meter">好感度: <span id="affection-value">0</span></div>
+        
+        <div id="character">ヒロイン</div>
+
+        <div id="choices-container"></div>
+
+        <div id="message-window">
+            <div id="character-name">名前</div>
+            <div id="dialogue-text">テキストがここに入ります。</div>
+        </div>
+    </div>
+
+    <script>
+        // --- ゲームのデータ（シナリオ） ---
+        const story = {
+            start: {
+                name: "幼馴染",
+                text: "「おはよう！ 今日もいい天気だね。一緒に学校行こ！」",
+                choices: [
+                    { text: "おはよう！ 行こうか", next: "scene_happy", affectionChange: 10 },
+                    { text: "えー、めんどくさいなあ", next: "scene_sad", affectionChange: -5 }
+                ]
+            },
+            scene_happy: {
+                name: "幼馴染",
+                text: "「えへへ、嬉しいな。あ、そういえば今日のテスト勉強した？」",
+                choices: [
+                    { text: "ばっちりだよ", next: "end_good", affectionChange: 10 },
+                    { text: "全然してない…", next: "end_normal", affectionChange: 0 }
+                ]
+            },
+            scene_sad: {
+                name: "幼馴染",
+                text: "「むっ…相変わらず冷たいなあ。置いていくよ！」",
+                choices: [
+                    { text: "ごめんごめん、一緒に行くよ", next: "scene_happy", affectionChange: 5 },
+                    { text: "勝手に行けば？", next: "end_bad", affectionChange: -10 }
+                ]
+            },
+            end_good: {
+                name: "幼馴染",
+                text: "「さすが！ じゃあ今日の放課後、一緒に遊ぼうね！」<br>〜 Happy End 〜",
+                choices: [] // 選択肢がない場合はエンディングとみなす
+            },
+            end_normal: {
+                name: "幼馴染",
+                text: "「もう、しょうがないなあ。放課後教えてあげるよ。」<br>〜 Normal End 〜",
+                choices: []
+            },
+            end_bad: {
+                name: "幼馴染",
+                text: "「…バカ！ もう知らない！」<br>〜 Bad End 〜",
+                choices: []
+            }
+        };
+
+        // --- ゲームのシステム変数 ---
+        let currentScene = "start"; // 現在のシーン
+        let affection = 0;          // 好感度
+
+        // --- HTML要素の取得 ---
+        const nameElement = document.getElementById("character-name");
+        const textElement = document.getElementById("dialogue-text");
+        const choicesContainer = document.getElementById("choices-container");
+        const affectionValueElement = document.getElementById("affection-value");
+
+        // --- シーンを描画する関数 ---
+        function renderScene(sceneId) {
+            const sceneData = story[sceneId];
+            
+            // テキストと名前の更新
+            nameElement.innerHTML = sceneData.name;
+            textElement.innerHTML = sceneData.text;
+
+            // 選択肢のクリア
+            choicesContainer.innerHTML = "";
+
+            // 選択肢の生成
+            if (sceneData.choices.length > 0) {
+                sceneData.choices.forEach(choice => {
+                    const button = document.createElement("button");
+                    button.className = "choice-btn";
+                    button.innerText = choice.text;
+                    
+                    // クリック時の処理
+                    button.onclick = () => {
+                        // 好感度の変動があれば加算
+                        if (choice.affectionChange) {
+                            affection += choice.affectionChange;
+                            affectionValueElement.innerText = affection;
+                        }
+                        // 次のシーンへ移動
+                        renderScene(choice.next);
+                    };
+                    choicesContainer.appendChild(button);
+                });
+            } else {
+                // 選択肢がない場合（エンディング等）、「最初から」ボタンを表示
+                const resetButton = document.createElement("button");
+                resetButton.className = "choice-btn";
+                resetButton.innerText = "最初から遊ぶ";
+                resetButton.onclick = () => {
+                    affection = 0;
+                    affectionValueElement.innerText = affection;
+                    renderScene("start");
+                };
+                choicesContainer.appendChild(resetButton);
+            }
+        }
+
+        // --- ゲームスタート ---
+        renderScene(currentScene);
+
+    </script>
+</body>
+</html>
