@@ -26,7 +26,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        /* ヒロイン画像：常時ふわふわ動くアニメーション（float）を設定 */
+        /* ヒロイン画像：プログラムの動きを消してスッキリさせました */
         #character {
             height: 90%;
             position: absolute;
@@ -35,36 +35,6 @@
             transform: translateX(-50%);
             object-fit: contain;
             z-index: 1;
-            /* 4秒かけて上下にふわふわループするアニメーション */
-            animation: float-animation 4s ease-in-out infinite;
-            transition: filter 0.3s;
-        }
-
-        /* 【アニメーション1】常に呼吸しているようにふわふわ動く */
-        @keyframes float-animation {
-            0% {
-                bottom: 0px;
-                transform: translateX(-50%) scale(1);
-            }
-            50% {
-                bottom: 12px; /* 少し上に浮く */
-                transform: translateX(-50%) scale(1.01); /* 微妙に拡大して立体感を出す */
-            }
-            100% {
-                bottom: 0px;
-                transform: translateX(-50%) scale(1);
-            }
-        }
-
-        /* 【アニメーション2】選択肢をクリックしたときに「ぴょこん」と跳ねる動き */
-        .jump-effect {
-            animation: jump-animation 0.4s ease-out !important;
-        }
-
-        @keyframes jump-animation {
-            0% { bottom: 0px; }
-            50% { bottom: 35px; } /* 上に跳ねる */
-            100% { bottom: 0px; }
         }
 
         /* 左側：メッセージウィンドウ */
@@ -216,16 +186,6 @@
         const textElement = document.getElementById("dialogue-text");
         const choicesContainer = document.getElementById("choices-container");
         const affectionValueElement = document.getElementById("affection-value");
-        const characterElement = document.getElementById("character");
-
-        // ヒロインにリアクション（ジャンプ）をさせる関数
-        function triggerCharacterReaction() {
-            // 一度クラスを削除して、再度追加することでアニメーションをリセット・実行する
-            characterElement.classList.remove("jump-effect");
-            // ズレを防止するため一瞬だけ待ってからクラスを付与
-            void characterElement.offsetWidth; 
-            characterElement.classList.add("jump-effect");
-        }
 
         function renderScene(sceneId) {
             const sceneData = story[sceneId];
@@ -239,17 +199,12 @@
                     button.className = "choice-btn";
                     button.innerText = choice.text;
                     button.onclick = () => {
-                        // 選択肢がクリックされたらヒロインをジャンプさせる
-                        triggerCharacterReaction();
-
                         if (choice.affectionChange) {
                             affection += choice.affectionChange;
                             affectionValueElement.innerText = affection;
                         }
-                        // アニメーションの余韻を感じさせるため、少しだけ遅らせて次の会話へ
-                        setTimeout(() => {
-                            renderScene(choice.next);
-                        }, 200);
+                        // ジャンプアニメーション待ちを消し、即座に次のシーンへ遷移させます
+                        renderScene(choice.next);
                     };
                     choicesContainer.appendChild(button);
                 });
