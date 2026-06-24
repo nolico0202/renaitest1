@@ -1,185 +1,226 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>恋愛シミュレーション プロトタイプ</title>
-<style>
-    /* 画面全体の基本設定 */
-    body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden; /* スクロールバーを隠す */
-        font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
-        background-color: #222; /* 画面全体の背景色 */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>恋愛シミュレーション - サイドレイアウト</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+        }
 
-    /* ゲーム画面のコンテナ（16:9の比率を維持） */
-    #game-container {
-        position: relative;
-        width: 100%;
-        max-width: 1280px; /* PCでの最大幅 */
-        aspect-ratio: 16 / 9; /* 比率 */
-        /* 背景画像をここに指定します。まだ画像がない場合は、背景色になります。 */
-        background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-        background-size: cover;
-        background-position: center;
-        box-shadow: 0 0 15px rgba(0,0,0,0.8);
-        overflow: hidden;
-    }
+        /* ゲーム画面全体のコンテナ */
+        #game-container {
+            width: 960px; /* 少し幅を広げました */
+            height: 600px;
+            background: linear-gradient(to bottom, #87CEEB, #e0f7fa); /* 綺麗な背景グラデーション */
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
 
-    /* === アニメーション設定 === */
-    @keyframes sway {
-        0% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
-        50% { transform: translateX(-50%) translateY(-6px) rotate(0.5deg); }
-        100% { transform: translateX(-50%) translateY(0px) rotate(0deg); }
-    }
+        /* ヒロイン画像：中央に配置し、お顔が見えるように調整 */
+        #character {
+            height: 90%; /* 画面内に収まるサイズ */
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            object-fit: contain;
+            z-index: 1;
+        }
 
-    /* ヒロインの立ち絵 */
-    #character {
-        position: absolute;
-        bottom: -5%; /* 立ち絵を少し下に配置 */
-        left: 50%;
-        transform: translateX(-50%);
-        height: 95%; /* 立ち絵の大きさ */
-        z-index: 10;
-        /* ゆったり動くアニメーション */
-        animation: sway 4s ease-in-out infinite;
-    }
+        /* 左側：メッセージウィンドウ */
+        #message-window {
+            position: absolute;
+            bottom: 40px;
+            left: 30px;
+            width: 380px;
+            height: 160px;
+            background-color: rgba(255, 255, 255, 0.85); /* 透明感のある白 */
+            border: 3px solid #ffb6c1;
+            border-radius: 15px;
+            padding: 20px;
+            box-sizing: border-box;
+            color: #333;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
 
-    /* 好感度表示（右上） */
-    #affection-display {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background-color: #fff;
-        color: #333;
-        padding: 10px 25px;
-        border-radius: 8px;
-        font-size: 22px;
-        font-weight: bold;
-        z-index: 30;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        letter-spacing: 2px;
-    }
+        /* 右側：選択肢コンテナ */
+        #choices-container {
+            position: absolute;
+            bottom: 40px;
+            right: 30px;
+            width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10;
+        }
 
-    /* 選択肢のコンテナ（左右に配置） */
-    #choices-container {
-        position: absolute;
-        top: 45%; /* 顔の下あたりに配置 */
-        width: 100%;
-        display: flex;
-        justify-content: space-between; /* 左右に散らす */
-        padding: 0 80px; /* 画面端からの余白 */
-        box-sizing: border-box;
-        z-index: 20;
-    }
+        /* 名前ラベル */
+        #character-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            color: #ff69b4;
+            border-bottom: 2px solid #ffb6c1;
+            display: inline-block;
+        }
 
-    /* 選択肢ボタンのデザイン */
-    .choice-button {
-        background-color: rgba(255, 255, 255, 0.95);
-        border: 2px solid #eab8e4; /* 淡いピンク紫の枠線 */
-        border-radius: 12px;
-        padding: 15px 30px;
-        font-size: 18px;
-        color: #333;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 8px rgba(234, 184, 228, 0.6); /* 発光エフェクト */
-        width: 320px;
-        text-align: center;
-        font-weight: bold;
-    }
+        #dialogue-text {
+            font-size: 1.05em;
+            line-height: 1.6;
+        }
 
-    .choice-button:hover {
-        transform: scale(1.05); /* マウスオーバーで少し拡大 */
-        background-color: #fff;
-        box-shadow: 0 0 20px rgba(255, 255, 255, 1), 0 0 12px rgba(234, 184, 228, 0.8);
-    }
+        /* 選択肢ボタン */
+        .choice-btn {
+            background-color: rgba(255, 182, 193, 0.9); /* ピンク色のボタン */
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            box-shadow: 0 4px 0 #ff8da1;
+        }
 
-    /* メッセージウィンドウ */
-    #message-box {
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 90%;
-        background-color: rgba(30, 30, 30, 0.85); /* 半透明の黒 */
-        border: 2px solid #fff;
-        border-radius: 12px;
-        padding: 20px 30px;
-        box-sizing: border-box;
-        color: #fff;
-        z-index: 30;
-        min-height: 130px;
-    }
+        .choice-btn:hover {
+            background-color: #ff69b4;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #e05596;
+        }
 
-    /* キャラクター名 */
-    #character-name {
-        color: #f1c40f; /* 提示画像の黄色に合わせて */
-        font-size: 22px;
-        font-weight: bold;
-        margin-bottom: 12px;
-        letter-spacing: 1px;
-    }
+        .choice-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 0 0;
+        }
 
-    /* セリフテキスト */
-    #message-text {
-        font-size: 20px;
-        line-height: 1.6;
-        letter-spacing: 1px;
-    }
-</style>
+        /* 好感度表示：左上に配置 */
+        #affection-meter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #ff69b4;
+            z-index: 10;
+            border: 2px solid #ffb6c1;
+        }
+    </style>
 </head>
 <body>
 
-<div id="game-container">
-    <div id="affection-display">好感度：<span id="affection-score">0</span></div>
+    <div id="game-container">
+        <div id="affection-meter">❤ 好感度: <span id="affection-value">0</span></div>
+        
+        <img src="heroine.jpg" id="character" alt="ヒロイン">
 
-    <img id="character" src="ヒロインの画像のパス.png" alt="ヒロイン">
+        <div id="message-window">
+            <div id="character-name">名前</div>
+            <div id="dialogue-text">テキストがここに入ります。</div>
+        </div>
 
-    <div id="choices-container">
-        <div class="choice-button" onclick="selectChoice(1)">おはよう！ 行こうか</div>
-        <div class="choice-button" onclick="selectChoice(2)">えー、めんどくさいなあ</div>
+        <div id="choices-container"></div>
     </div>
 
-    <div id="message-box">
-        <div id="character-name">幼馴染</div>
-        <div id="message-text">「おはよう！ 今日もいい天気だね。一緒に学校行こ！」</div>
-    </div>
-</div>
+    <script>
+        const story = {
+            start: {
+                name: "幼馴染",
+                text: "「おはよう！ 今日もいい天気だね。一緒に学校行こ！」",
+                choices: [
+                    { text: "❤ おはよう！ 行こうか", next: "scene_happy", affectionChange: 10 },
+                    { text: "💧 えー、めんどくさいなあ", next: "scene_sad", affectionChange: -5 }
+                ]
+            },
+            scene_happy: {
+                name: "幼馴染",
+                text: "「えへへ、嬉しいな。あ、そういえば今日のテスト勉強した？」",
+                choices: [
+                    { text: "✨ ばっちりだよ", next: "end_good", affectionChange: 10 },
+                    { text: "🌀 全然してない…", next: "end_normal", affectionChange: 0 }
+                ]
+            },
+            scene_sad: {
+                name: "幼馴染",
+                text: "「むっ…相変わらず冷たいなあ。置いていくよ！」",
+                choices: [
+                    { text: "🙏 ごめんごめん、一緒に行くよ", next: "scene_happy", affectionChange: 5 },
+                    { text: "🏃 勝手に行けば？", next: "end_bad", affectionChange: -10 }
+                ]
+            },
+            end_good: {
+                name: "幼馴染",
+                text: "「さすが！ じゃあ今日の放課後、一緒に遊ぼうね！」<br><br><b>〜 Happy End 〜</b>",
+                choices: [] 
+            },
+            end_normal: {
+                name: "幼馴染",
+                text: "「もう、しょうがないなあ。放課後教えてあげるよ。」<br><br><b>〜 Normal End 〜</b>",
+                choices: []
+            },
+            end_bad: {
+                name: "幼馴染",
+                text: "「…バカ！ もう知らない！」<br><br><b>〜 Bad End 〜</b>",
+                choices: []
+            }
+        };
 
-<script>
-    // 好感度の初期値
-    let affection = 0;
+        let affection = 0;
 
-    // 選択肢をクリックした時の処理
-    function selectChoice(choiceId) {
-        const messageText = document.getElementById('message-text');
-        const affectionScore = document.getElementById('affection-score');
-        const choicesContainer = document.getElementById('choices-container');
+        const nameElement = document.getElementById("character-name");
+        const textElement = document.getElementById("dialogue-text");
+        const choicesContainer = document.getElementById("choices-container");
+        const affectionValueElement = document.getElementById("affection-value");
 
-        if (choiceId === 1) {
-            // 「おはよう！ 行こうか」を選んだ場合
-            messageText.innerText = "「うんっ！ 今日も一日がんばろーね！」";
-            affection += 10;
-        } else if (choiceId === 2) {
-            // 「えー、めんどくさいなあ」を選んだ場合
-            messageText.innerText = "「もう、相変わらずだなぁ…ほら、遅刻しちゃうよ！」";
-            affection -= 5;
+        function renderScene(sceneId) {
+            const sceneData = story[sceneId];
+            nameElement.innerHTML = sceneData.name;
+            textElement.innerHTML = sceneData.text;
+            choicesContainer.innerHTML = "";
+
+            if (sceneData.choices.length > 0) {
+                sceneData.choices.forEach(choice => {
+                    const button = document.createElement("button");
+                    button.className = "choice-btn";
+                    button.innerText = choice.text;
+                    button.onclick = () => {
+                        if (choice.affectionChange) {
+                            affection += choice.affectionChange;
+                            affectionValueElement.innerText = affection;
+                        }
+                        renderScene(choice.next);
+                    };
+                    choicesContainer.appendChild(button);
+                });
+            } else {
+                const resetButton = document.createElement("button");
+                resetButton.className = "choice-btn";
+                resetButton.innerText = "🔄 最初から遊ぶ";
+                resetButton.onclick = () => {
+                    affection = 0;
+                    affectionValueElement.innerText = affection;
+                    renderScene("start");
+                };
+                choicesContainer.appendChild(resetButton);
+            }
         }
 
-        // 好感度の表示を更新
-        affectionScore.innerText = affection;
-
-        // 選択肢を非表示にする
-        choicesContainer.style.display = 'none';
-    }
-</script>
-
+        renderScene("start");
+    </script>
 </body>
 </html>
